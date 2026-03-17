@@ -1,0 +1,133 @@
+---
+title: "Hospital Readmission Risk Stratification: Identifying High-Risk Diabetic Patients for Proactive Clinical Intervention"
+output: html_document
+date: "2025-02-09"
+author: Nusrath Ameena Ahamed Nasar 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction 
+
+Context: 
+An end-to-end predictive analytics system to identify diabetic patients at high risk of 30-day readmission, enabling hospitals to prioritize discharge planning and post-acute interventions.
+
+Question: 
+1. Which diabetic patients are at highest risk of 30-day hospital readmission
+2. what clinical and operational factors drive this risk
+3. How can hospitals optimize discharge planning and post-acute care to reduce preventable readmissions?
+
+### Read in data 
+```{r}
+df = read.csv('data/dataset.csv', header = TRUE)
+num_cols <- unlist(lapply(df, is.numeric))
+plot(df[,num_cols])
+```
+
+```{r}
+colnames(df)
+```
+
+
+```{r}
+df$age <- as.numeric(df$age)
+df$children <- as.numeric(df$children)
+
+for (col in colnames(df)) {
+  cat("Column:", col, "- Type:", class(df[[col]]), "\n")
+}
+```
+
+
+
+```{r}
+# Loop through columns and create visualizations with custom axis labels
+for (col in colnames(df)) {
+  if (is.numeric(df[[col]])) {
+    hist(df[[col]], 
+         main = paste("Histogram of", col), 
+         xlab = paste(col, "Values"),  # Custom x-axis label
+         ylab = "Frequency",           # Custom y-axis label
+         col = "skyblue")
+  } else if (is.character(df[[col]]) || is.factor(df[[col]])) {
+    barplot(table(df[[col]]), 
+            main = paste("Bar Chart of", col), 
+            xlab = col,                # Custom x-axis label
+            ylab = "Count",            # Custom y-axis label
+            col = "pink")
+  }
+}
+
+```
+
+```{r}
+# Create a frequency table for a specific column
+freq_table <- table(df$sex)
+
+# Create the bar chart
+bar_positions <- barplot(freq_table, 
+                         main = "Bar Chart with Counts", 
+                         xlab = "Categories", 
+                         ylab = "Frequency", 
+                         col = "skyblue")
+
+# Add counts on top of bars
+text(x = bar_positions, 
+     y = freq_table, 
+     labels = freq_table, 
+     pos = 1)
+
+```
+```{r}
+freq_table <- table(df$smoker)
+
+# Create the bar chart
+bar_positions <- barplot(freq_table, 
+                         main = "Smoker Chart with Counts", 
+                         xlab = "Categories", 
+                         ylab = "Frequency", 
+                         col = "skyblue")
+
+# Add counts on top of bars
+text(x = bar_positions, 
+     y = freq_table, 
+     labels = freq_table, 
+     pos = 1)
+
+```
+
+
+```{r}
+library(ggplot2)
+
+# Replace "column_name" with your numeric column
+ggplot(df, aes(x = medical.charges)) +
+  geom_density(aes(y = after_stat(count)),fill = "lightblue", color = "blue") +
+  labs(title = "Medical Charges", x = "Amount", y = "Density")
+
+```
+Correlation between cost to variables 
+a. Numeric Data type 
+```{r}
+
+cor(df[sapply(df, is.numeric)], method = "spearman")
+
+```
+b. Character data type
+```{r}
+smoker = as.factor(df$smoker)
+sex = as.factor(df$sex)
+region = as.factor(df$region)
+
+boxplot(df$medical.charges ~ smoker, main = 'Smoker')
+boxplot(df$medical.charges ~ sex, main = 'Sex')
+boxplot(df$medical.charges ~ region, region = 'Region')
+```
+
+
+Next steps:
+
+- region, maybe also include a map - perhaps we can combine with powerbi?
